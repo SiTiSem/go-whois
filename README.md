@@ -53,6 +53,32 @@ if available {
 }
 ```
 
+`Whois` returns a `*whois.Result`. Check availability directly on that result
+without another network query:
+
+```go
+result, err := client.Whois("example.com")
+if err != nil {
+	log.Fatal(err)
+}
+available, err := result.IsDomainAvailable()
+if err != nil {
+	log.Fatal(err)
+}
+if available {
+	fmt.Println("available")
+}
+```
+
+Use `result.Raw` or `result.String()` to access the response text. Printing the
+result with `fmt.Println(result)` also prints the response text. Code that
+previously used the return value of `Whois` as a string must now use `result.Raw`.
+
+Both availability methods match the zone's "no match" string without regard to
+case and return `ErrNoMatchString` if the zone has no availability marker.
+`Whois` still returns the response for zones without a marker, as well as for IP
+and AS queries; availability checking for these results returns `ErrNoMatchString`.
+
 ## Custom server list
 
 Load servers from a JSON file on disk:
@@ -75,7 +101,7 @@ Server JSON format:
 ```
 
 The first element is the WHOIS server hostname. The second element is an optional
-"no match" string (reserved for callers who want to parse availability).
+"no match" string used by `IsDomainAvailable`.
 
 ## Port
 
